@@ -1,0 +1,162 @@
+:root {
+    --black: #1a1a1a;
+    --white: #ffffff;
+    --gray: #f2f2f2;
+    --border: #e0e0e0;
+}
+
+body {
+    margin: 0;
+    font-family: "Helvetica Neue", "Helvetica", "Arial", "PingFang TC", sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 方格背景設計 */
+.grid-background {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    background-image: 
+        linear-gradient(var(--gray) 1px, transparent 1px),
+        linear-gradient(90deg, var(--gray) 1px, transparent 1px);
+    background-size: 25px 25px; /* 方格大小 */
+    opacity: 0.5;
+}
+
+header {
+    text-align: center;
+    padding: 60px 20px 20px;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 6px;
+    margin-bottom: 30px;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    border-bottom: 1px solid var(--border);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    padding: 15px 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #999;
+    position: relative;
+    letter-spacing: 2px;
+}
+
+.nav-btn.active {
+    color: var(--black);
+    font-weight: bold;
+}
+
+.nav-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; width: 100%;
+    height: 2px; background: var(--black);
+}
+
+.container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.5s; }
+
+/* 商品網格 */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px;
+}
+
+.product-card {
+    border: 1px solid var(--border);
+    background: var(--white);
+}
+
+.img-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    background: #f9f9f9;
+}
+
+.product-card img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.product-card:hover img { transform: scale(1.05); }
+
+.info { padding: 20px; text-align: center; }
+
+.category { font-size: 0.7rem; color: #888; letter-spacing: 1px; }
+
+.price { font-weight: bold; margin: 15px 0; }
+
+.buy-btn {
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 10px 40px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    letter-spacing: 2px;
+}
+
+/* 購買須知風格 */
+.notice-container {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 40px;
+    line-height: 2;
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 0.95rem;
+}
+
+/* 彈窗 */
+.modal-content {
+    background: var(--white);
+    border: 1px solid var(--black);
+    border-radius: 0; /* 簡約風不建議圓角太重 */
+}
+
+input {
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    margin-bottom: 20px;
+    background: none;
+}
+
+input:focus {
+    outline: none;
+    border-bottom: 1px solid var(--black);
+}
+
+.submit-btn {
+    background: var(--black);
+    border-radius: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

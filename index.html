@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STUDIO ARCHIVE | 數位資產</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grid-background"></div>
+
+<header>
+    <h1>STUDIO ARCHIVE</h1>
+    <nav>
+        <button class="nav-btn active" onclick="showPage('shop')">精選商品</button>
+        <button class="nav-btn" onclick="showPage('notice')">購買須知</button>
+    </nav>
+</header>
+
+<div class="container">
+    <section id="page-shop" class="page active">
+        <div id="product-list" class="product-grid">
+            <p class="status">正在讀取檔案...</p>
+        </div>
+    </section>
+
+    <section id="page-notice" class="page">
+        <div class="notice-container" id="notice-content">
+            <p class="status">載入公告中...</p>
+        </div>
+    </section>
+</div>
+
+<div id="order-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2 id="modal-product-title">ORDER FORM</h2>
+        <div class="bank-box">
+            <p><strong>匯款資訊</strong></p>
+            <p>銀行代碼：822 (中國信託)</p>
+            <p>帳號：123-45678-901</p>
+        </div>
+        <form id="order-form">
+            <input type="hidden" id="form-product-name">
+            <input type="text" id="name" placeholder="NAME / 姓名" required>
+            <input type="text" id="ig" placeholder="INSTAGRAM / IG 帳號" required>
+            <input type="email" id="email" placeholder="GMAIL / 電子信箱" required>
+            <input type="text" id="bank" placeholder="BANK / 匯款末五碼" required>
+            <button type="submit" id="submit-btn" class="submit-btn">SEND ORDER</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwInkzGy9ipxoJsfac9WkZ0kO-84gNzUcIjn2IPNZ4LGoiT4HZ4si72D-dLEXWtIZCQZQ/exec';
+
+    async function fetchData() {
+        try {
+            const response = await fetch(GAS_URL);
+            const data = await response.json();
+            
+            // 渲染商品
+            const productGrid = document.getElementById('product-list');
+            productGrid.innerHTML = data.products.map(item => `
+                <div class="product-card">
+                    <div class="img-container">
+                        <img src="${item.商品圖片}" alt="${item.商品名稱}">
+                    </div>
+                    <div class="info">
+                        <span class="category">${item.標籤}</span>
+                        <h3>${item.商品名稱}</h3>
+                        <p class="price">NT$ ${item.價格}</p>
+                        <button class="buy-btn" onclick="openModal('${item.商品名稱}')">SELECT</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 渲染公告
+            const noticeBox = document.getElementById('notice-content');
+            noticeBox.innerHTML = data.notices.map(n => `<p>・ ${n}</p>`).join('');
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function openModal(name) {
+        document.getElementById('modal-product-title').innerText = name;
+        document.getElementById('form-product-name').value = name;
+        document.getElementById('order-modal').style.display = 'block';
+    }
+
+    document.querySelector('.close-btn').onclick = () => document.getElementById('order-modal').style.display = 'none';
+
+    fetchData();
+</script>
+</body>
+</html>
