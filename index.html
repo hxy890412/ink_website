@@ -11,7 +11,8 @@
 <div class="grid-background"></div>
 
 <header>
-    <h1>墨語拾光 數位產品</h1>
+    <h1>墨語拾光</h1>
+    <p class="subtitle">DIGITAL PRODUCTS</p>
     <nav>
         <button class="nav-btn active" onclick="showPage('shop')">精選商品</button>
         <button class="nav-btn" onclick="showPage('notice')">購買須知</button>
@@ -26,7 +27,7 @@
     </section>
 
     <section id="page-notice" class="page">
-        <div class="notice-container" id="notice-content">
+        <div class="notice-container card-style" id="notice-content">
             <p class="status">載入公告中...</p>
         </div>
     </section>
@@ -35,20 +36,23 @@
 <div id="cart-bar" class="cart-bar" onclick="openCartModal()">
     <div class="cart-info">
         <span class="cart-icon">🛒</span>
-        <span id="cart-count">0</span> 件商品
+        <span id="cart-count" class="count-badge">0</span>
     </div>
-    <button class="checkout-btn">前往結帳</button>
+    <button class="checkout-btn">前往購物車</button>
 </div>
 
-<div id="cart-modal" class="modal">
+<div id="cart-modal" class="modal" onclick="handleModalClick(event)">
     <div class="modal-content">
-        <span class="close-btn" onclick="closeCartModal()">&times;</span>
+        <div class="modal-header">
+            <div class="handle"></div> <span class="close-btn" onclick="closeCartModal()">&times;</span>
+        </div>
+        
         <h2>YOUR CART / 購物車</h2>
         
         <div id="cart-items" class="cart-items-list">
             </div>
 
-        <div class="cart-summary">
+        <div class="cart-summary card-style">
             <span>總計</span>
             <span id="cart-total-price">NT$ 0</span>
         </div>
@@ -56,19 +60,22 @@
         <hr class="divider">
 
         <h3>CHECKOUT / 結帳資料</h3>
-        <div class="bank-box">
+        <div class="bank-box card-style">
             <p><strong>匯款資訊</strong></p>
             <p>銀行代碼：822 (中國信託)</p>
             <p>帳號：123-45678-901</p>
+            <p class="text-muted">※ 匯款後請填寫下方表單</p>
         </div>
 
         <form id="order-form">
             <input type="hidden" id="form-product-names">
-            <input type="text" id="name" placeholder="NAME / 姓名" required>
-            <input type="text" id="ig" placeholder="INSTAGRAM / IG 帳號" required>
-            <input type="email" id="email" placeholder="GMAIL / 電子信箱" required>
-            <input type="text" id="bank" placeholder="BANK / 匯款末五碼" required>
-            <button type="submit" id="submit-btn" class="submit-btn">SEND ORDER</button>
+            <div class="input-group">
+                <input type="text" id="name" placeholder="姓名 (NAME)" required>
+                <input type="text" id="ig" placeholder="IG 帳號 (INSTAGRAM)" required>
+                <input type="email" id="email" placeholder="Gmail 電子信箱" required>
+                <input type="text" id="bank" placeholder="匯款末五碼 (BANK)" required>
+            </div>
+            <button type="submit" id="submit-btn" class="submit-btn">送出訂單 SEND</button>
         </form>
     </div>
 </div>
@@ -77,7 +84,6 @@
     // 🚨 重要：請在此處替換成你的 Google Apps Script 網址
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbw0HVP5eFyvl2g0dw0m-aQRqAN38AJIAvXsp1e5RDgtKPD62zN6N2O-M1PnAchP__amtQ/exec';
     
-    // 購物車資料結構
     let cart = [];
 
     async function fetchData() {
@@ -85,18 +91,18 @@
             const response = await fetch(GAS_URL);
             const data = await response.json();
             
-            // 渲染商品 (改為雙列排版)
+            // 渲染商品
             const productGrid = document.getElementById('product-list');
             productGrid.innerHTML = data.products.map(item => `
                 <div class="product-card">
                     <div class="img-container">
-                        <img src="${item.商品圖片}" alt="${item.商品名稱}">
+                        <img src="${item.商品圖片}" alt="${item.商品名稱}" loading="lazy">
+                        <span class="category-tag">${item.標籤}</span>
                     </div>
                     <div class="info">
-                        <span class="category">${item.標籤}</span>
                         <h3>${item.商品名稱}</h3>
                         <p class="price">NT$ ${item.價格}</p>
-                        <button class="add-to-cart-btn" onclick="addToCart('${item.商品名稱}', ${item.價格})">ADD TO CART</button>
+                        <button class="add-to-cart-btn" onclick="addToCart(event, '${item.商品名稱}', ${item.價格})">加入購物車</button>
                     </div>
                 </div>
             `).join('');
@@ -107,12 +113,13 @@
 
         } catch (e) {
             console.error(e);
+            document.querySelectorAll('.status').forEach(el => el.innerText = '載入失敗，請稍後再試。');
         }
     }
 
     // --- 購物車邏輯 ---
 
-    function addToCart(name, price) {
+    function addToCart(event, name, price) {
         // 檢查是否已在購物車中
         const exists = cart.some(item => item.name === name);
         if (exists) {
@@ -123,19 +130,23 @@
         cart.push({ name, price });
         updateCartBar();
         
-        // 簡單的動態回饋
-        event.target.innerText = 'ADDED ✓';
-        event.target.style.background = '#27ae60';
+        // 按鈕狀態回饋
+        const btn = event.target;
+        btn.innerText = '已加入 ✓';
+        btn.classList.add('added');
+        btn.disabled = true;
+        
         setTimeout(() => {
-            event.target.innerText = 'ADD TO CART';
-            event.target.style.background = '#1a1a1a';
-        }, 1000);
+            btn.innerText = '加入購物車';
+            btn.classList.remove('added');
+            btn.disabled = false;
+        }, 1200);
     }
 
     function removeFromCart(index) {
         cart.splice(index, 1);
         updateCartBar();
-        renderCartItems(); // 重新渲染列表
+        renderCartItems(); 
     }
 
     function updateCartBar() {
@@ -156,7 +167,7 @@
         const cartTotalPrice = document.getElementById('cart-total-price');
         
         if (cart.length === 0) {
-            cartItemsList.innerHTML = '<p class="empty-cart">購物車是空的</p>';
+            cartItemsList.innerHTML = '<div class="empty-cart"><p>🛒</p><p>購物車是空的</p></div>';
             cartTotalPrice.innerText = 'NT$ 0';
             return;
         }
@@ -166,8 +177,10 @@
             total += item.price;
             return `
                 <div class="cart-item">
-                    <span class="item-name">${item.name}</span>
-                    <span class="item-price">NT$ ${item.price}</span>
+                    <div class="item-detail">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-price">NT$ ${item.price}</span>
+                    </div>
                     <span class="remove-item" onclick="removeFromCart(${index})">&times;</span>
                 </div>
             `;
@@ -180,11 +193,20 @@
 
     function openCartModal() {
         renderCartItems();
-        document.getElementById('cart-modal').style.display = 'block';
+        document.getElementById('cart-modal').classList.add('open');
+        document.body.style.overflow = 'hidden'; // 防止底層滾動
     }
 
     function closeCartModal() {
-        document.getElementById('cart-modal').style.display = 'none';
+        document.getElementById('cart-modal').classList.remove('open');
+        document.body.style.overflow = ''; 
+    }
+
+    // 點擊背景關閉彈窗
+    function handleModalClick(event) {
+        if (event.target.id === 'cart-modal') {
+            closeCartModal();
+        }
     }
 
     function showPage(pageId) {
@@ -192,6 +214,7 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('page-' + pageId).classList.add('active');
         event.currentTarget.classList.add('active');
+        window.scrollTo(0, 0); // 切換頁面時回到頂部
     }
 
     // --- 送出訂單 ---
@@ -205,8 +228,6 @@
         }
 
         const submitBtn = document.getElementById('submit-btn');
-        
-        // 將購物車商品名稱合併成一個字串 (例如："筆刷A, 模板B")
         const productNamesString = cart.map(item => item.name).join(', ');
 
         const formData = {
@@ -214,29 +235,33 @@
             ig: document.getElementById('ig').value,
             email: document.getElementById('email').value,
             bankInfo: document.getElementById('bank').value,
-            productName: productNamesString // 傳送合併後的名稱
+            productName: productNamesString 
         };
 
-        submitBtn.innerText = 'PROCESSING...';
+        submitBtn.innerText = '正在送出...';
         submitBtn.disabled = true;
 
         try {
-            const response = await fetch(GAS_URL, {
+            // 使用 no-cors 模式發送 POST 請求
+            await fetch(GAS_URL, {
                 method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
 
-            if (response.ok) {
-                alert('訂單已送出！請等待確認，權限開通後會收到 Email 通知。');
-                cart = []; // 清空購物車
-                updateCartBar();
-                orderForm.reset();
-                closeCartModal();
-            }
+            // 因為 no-cors 無法取得回應狀態，直接假設成功
+            alert('訂單已送出！請等待確認，權限開通後會收到 Email 通知。');
+            cart = []; 
+            updateCartBar();
+            orderForm.reset();
+            closeCartModal();
+
         } catch (error) {
-            alert('送出失敗，請聯繫店主。');
+            console.error(error);
+            alert('送出過程發生錯誤，請聯繫店主。');
         } finally {
-            submitBtn.innerText = 'SEND ORDER';
+            submitBtn.innerText = '送出訂單 SEND';
             submitBtn.disabled = false;
         }
     };
